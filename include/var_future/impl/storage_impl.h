@@ -119,7 +119,7 @@ void Future_storage<Alloc, Ts...>::fail(fail_type&& e) {
 
 template <typename Alloc, typename... Ts>
 template <typename Handler_t, typename QueueT, typename... Args_t>
-void Future_storage<Alloc, Ts...>::set_handler(QueueT* queue,
+void Future_storage<Alloc, Ts...>::set_handler(observer_ptr<QueueT> queue,
                                                Args_t&&... args) {
   assert(cb_data_.callback_ == nullptr);
 

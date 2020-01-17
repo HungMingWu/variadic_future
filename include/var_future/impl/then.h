@@ -39,7 +39,7 @@ class Future_then_handler : public Future_handler_base<QueueT, void, Ts...> {
   using dst_storage_type = Storage_for_cb_result_t<Alloc, cb_result_type>;
   using dst_type = Storage_ptr<dst_storage_type>;
 
-  Future_then_handler(QueueT* q, dst_type dst, CbT cb)
+  Future_then_handler(observer_ptr<QueueT> q, dst_type dst, CbT cb)
       : parent_type(q), dst_(std::move(dst)), cb_(std::move(cb)) {}
 
   void fullfill(fullfill_type v) override {
@@ -51,7 +51,7 @@ class Future_then_handler : public Future_handler_base<QueueT, void, Ts...> {
     do_finish(this->get_queue(), f, std::move(dst_), std::move(cb_));
   }
 
-  static void do_fullfill(QueueT* q, fullfill_type v, dst_type dst, CbT cb) {
+  static void do_fullfill(observer_ptr<QueueT> q, fullfill_type v, dst_type dst, CbT cb) {
     enqueue(q, [cb = std::move(cb), dst = std::move(dst), v = std::move(v)] {
       try {
         if constexpr (std::is_same_v<void, cb_result_type>) {
@@ -71,7 +71,7 @@ class Future_then_handler : public Future_handler_base<QueueT, void, Ts...> {
     });
   }
 
-  static void do_finish(QueueT* q, finish_type f, dst_type dst, CbT cb) {
+  static void do_finish(observer_ptr<QueueT> q, finish_type f, dst_type dst, CbT cb) {
     auto err = std::apply(get_first_error<Ts...>, f);
     if (err) {
       do_fail(q, *err, std::move(dst), std::move(cb));
@@ -83,7 +83,7 @@ class Future_then_handler : public Future_handler_base<QueueT, void, Ts...> {
     }
   }
 
-  static void do_fail(QueueT* q, fail_type e, dst_type dst, CbT) {
+  static void do_fail(observer_ptr<QueueT> q, fail_type e, dst_type dst, CbT) {
     // Straight propagation.
     enqueue(q, [dst = std::move(dst), e = std::move(e)]() mutable {
       dst->fail(std::move(e));

@@ -59,13 +59,13 @@ class Future_handler_iface {
 template <typename QueueT, typename Enable = void, typename... Ts>
 class Future_handler_base : public Future_handler_iface<Ts...> {
  public:
-  Future_handler_base(QueueT* q) : queue_(q) {}
+  Future_handler_base(observer_ptr<QueueT> q) : queue_(q) {}
 
  protected:
-  QueueT* get_queue() { return queue_; }
+  observer_ptr<QueueT> get_queue() { return queue_; }
 
  private:
-  QueueT* queue_;
+  observer_ptr<QueueT> queue_;
 };
 
 // If the queue's push() method is static, do not bother storing the pointer.
@@ -73,10 +73,10 @@ template <typename QueueT, typename... Ts>
 class Future_handler_base<QueueT, std::enable_if_t<has_static_push_v<QueueT>>,
                           Ts...> : public Future_handler_iface<Ts...> {
  public:
-  Future_handler_base(QueueT*) {}
+  Future_handler_base(observer_ptr<QueueT>) {}
 
  protected:
-  constexpr static QueueT* get_queue() { return nullptr; }
+  constexpr static observer_ptr<QueueT> get_queue() { return {}; }
 };
 
 constexpr std::uint8_t Future_storage_state_ready_bit = 1;
@@ -117,7 +117,7 @@ class Future_storage : public Alloc {
   void fail(fail_type&& e);
 
   template <typename Handler_t, typename QueueT, typename... Args_t>
-  void set_handler(QueueT* queue, Args_t&&... args);
+  void set_handler(observer_ptr<QueueT> queue, Args_t&&... args);
 
   Alloc& allocator() { return *static_cast<Alloc*>(this); }
 

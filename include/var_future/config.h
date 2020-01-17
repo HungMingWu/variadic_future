@@ -26,11 +26,14 @@
 
 // Change this if you want to use some other expected type.
 #include "nonstd/expected.hpp"
+#include "nonstd/observer_ptr.hpp"
 
 namespace aom {
 template <typename T>
 using expected = nonstd::expected<T, std::exception_ptr>;
 using unexpected = nonstd::unexpected_type<std::exception_ptr>;
+template <typename T>
+using observer_ptr = nonstd::observer_ptr<T>;
 }  // namespace aom
 
 #endif

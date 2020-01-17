@@ -35,7 +35,7 @@ class Future_finally_handler : public Future_handler_base<QueueT, void, Ts...> {
   CbT cb_;
 
  public:
-  Future_finally_handler(QueueT* q, CbT cb)
+  Future_finally_handler(observer_ptr<QueueT> q, CbT cb)
       : parent_type(q), cb_(std::move(cb)) {}
 
   void fullfill(fullfill_type v) override {
@@ -46,19 +46,19 @@ class Future_finally_handler : public Future_handler_base<QueueT, void, Ts...> {
     do_finish(this->get_queue(), std::move(f), std::move(cb_));
   };
 
-  static void do_fullfill(QueueT* q, fullfill_type v, CbT cb) {
+  static void do_fullfill(observer_ptr<QueueT> q, fullfill_type v, CbT cb) {
     auto cb_args =
         fullfill_to_finish<0, 0, std::tuple<expected<Ts>...>>(std::move(v));
     do_finish(q, std::move(cb_args), std::move(cb));
   }
 
-  static void do_finish(QueueT* q, finish_type f, CbT cb) {
+  static void do_finish(observer_ptr<QueueT> q, finish_type f, CbT cb) {
     enqueue(q, [cb = std::move(cb), f = std::move(f)]() mutable {
       std::apply(cb, std::move(f));
     });
   }
 
-  static void do_fail(QueueT* q, fail_type e, CbT cb) {
+  static void do_fail(observer_ptr<QueueT> q, fail_type e, CbT cb) {
     auto cb_args = fail_to_expect<0, std::tuple<expected<Ts>...>>(std::move(e));
     do_finish(q, std::move(cb_args), std::move(cb));
   }

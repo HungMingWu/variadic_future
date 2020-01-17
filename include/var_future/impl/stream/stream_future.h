@@ -51,7 +51,7 @@ Basic_stream_future<Alloc, Ts...>::for_each(QueueT& queue, CbT&& cb) {
   // This must be done BEFORE set_handler
   auto result_fut = storage_->get_final_future();
 
-  storage_->template set_handler<handler_t>(&queue, std::move(cb));
+  storage_->template set_handler<handler_t>(observer_ptr<QueueT>(&queue), std::move(cb));
   storage_.reset();
 
   return result_fut;

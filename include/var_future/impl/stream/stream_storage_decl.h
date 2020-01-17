@@ -44,13 +44,13 @@ class Stream_handler_iface {
 template <typename QueueT, typename Enable = void, typename... Ts>
 class Stream_handler_base : public Stream_handler_iface<Ts...> {
  public:
-  Stream_handler_base(QueueT* q) : queue_(q) {}
+  Stream_handler_base(observer_ptr<QueueT> q) : queue_(q) {}
 
  protected:
-  QueueT* get_queue() { return queue_; }
+  observer_ptr<QueueT> get_queue() { return queue_; }
 
  private:
-  QueueT* queue_;
+  observer_ptr<QueueT> queue_;
 };
 
 // If the queue's push() method is static, do not bother storing the pointer.
@@ -58,10 +58,10 @@ template <typename QueueT, typename... Ts>
 class Stream_handler_base<QueueT, std::enable_if_t<has_static_push_v<QueueT>>,
                           Ts...> : public Stream_handler_iface<Ts...> {
  public:
-  Stream_handler_base(QueueT*) {}
+  Stream_handler_base(observer_ptr<QueueT>) {}
 
  protected:
-  constexpr static QueueT* get_queue() { return nullptr; }
+  constexpr static observer_ptr<QueueT> get_queue() { return {}; }
 };
 
 constexpr std::uint8_t Stream_storage_state_ready_bit = 1;
@@ -86,7 +86,7 @@ class Stream_storage : public Alloc {
   void complete();
 
   template <typename Handler_t, typename QueueT, typename... Args_t>
-  void set_handler(QueueT* queue, Args_t&&... args);
+  void set_handler(observer_ptr<QueueT> queue, Args_t&&... args);
 
   Alloc& allocator() { return *static_cast<Alloc*>(this); }
   const Alloc& allocator() const { return *static_cast<const Alloc*>(this); }

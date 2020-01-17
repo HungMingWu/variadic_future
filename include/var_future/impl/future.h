@@ -90,7 +90,7 @@ template <typename QueueT, typename CbT>
   detail::Storage_ptr<result_storage_t> result;
   result.allocate(allocator());
 
-  storage_->template set_handler<handler_t>(&queue, result, std::move(cb));
+  storage_->template set_handler<handler_t>(observer_ptr<QueueT>(&queue), result, std::move(cb));
   storage_.reset();
 
   return result_fut_t(std::move(result));
@@ -108,7 +108,7 @@ template <typename QueueT, typename CbT>
   detail::Storage_ptr<result_storage_t> result;
   result.allocate(allocator());
 
-  storage_->template set_handler<handler_t>(&queue, result, std::move(cb));
+  storage_->template set_handler<handler_t>(observer_ptr<QueueT>(&queue), result, std::move(cb));
   storage_.reset();
 
   return result_fut_t(std::move(result));
@@ -122,7 +122,7 @@ void Basic_future<Alloc, Ts...>::finally(QueueT& queue, CbT&& cb) {
                 "Finally should be accepting expected arguments");
   using handler_t =
       detail::Future_finally_handler<std::decay_t<CbT>, QueueT, Ts...>;
-  storage_->template set_handler<handler_t>(&queue, std::move(cb));
+  storage_->template set_handler<handler_t>(observer_ptr<QueueT>(&queue), std::move(cb));
 
   storage_.reset();
 }

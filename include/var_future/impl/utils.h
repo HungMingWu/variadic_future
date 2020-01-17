@@ -238,12 +238,12 @@ constexpr bool has_static_push_v = has_static_push<T>::value;
 // enqueue(), duck-type push f into q.
 // If Q has a static_push method, then q is ignored.
 template <typename Q, typename F>
-std::enable_if_t<!has_static_push_v<Q>> enqueue(Q* q, F&& f) {
+std::enable_if_t<!has_static_push_v<Q>> enqueue(observer_ptr<Q> q, F&& f) {
   q->push(std::forward<F>(f));
 }
 
 template <typename Q, typename F>
-std::enable_if_t<has_static_push_v<Q>> enqueue(Q*, F&& f) {
+std::enable_if_t<has_static_push_v<Q>> enqueue(observer_ptr<Q>, F&& f) {
   Q::push(std::forward<F>(f));
 }
 

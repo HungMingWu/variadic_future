@@ -99,7 +99,7 @@ void Stream_storage<Alloc, Ts...>::fail(fail_type&& e) {
 
 template <typename Alloc, typename... Ts>
 template <typename Handler_t, typename QueueT, typename... Args_t>
-void Stream_storage<Alloc, Ts...>::set_handler(QueueT* queue,
+void Stream_storage<Alloc, Ts...>::set_handler(observer_ptr<QueueT> queue,
                                                Args_t&&... args) {
   using alloc_traits = std::allocator_traits<Alloc>;
   using Real_alloc = typename alloc_traits::template rebind_alloc<Handler_t>;

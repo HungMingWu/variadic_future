@@ -38,14 +38,14 @@ class Future_stream_foreach_handler
   CbT& get_cb() { return &cb_; }
 
   Future_stream_foreach_handler(Storage_ptr<Future_storage<Alloc, void>> fin,
-                                QueueT* q, CbT cb)
+                                observer_ptr<QueueT> q, CbT cb)
       : parent_type(q), cb_(std::move(cb)), finalizer_(std::move(fin)) {}
 
   void push(Ts... args) override {
     do_push(this->get_queue(), cb_, std::tuple<Ts...>(std::move(args)...));
   }
 
-  static void do_push(QueueT* q, CbT cb, std::tuple<Ts...> args) {
+  static void do_push(observer_ptr<QueueT> q, CbT cb, std::tuple<Ts...> args) {
     enqueue(q, [cb = std::move(cb), args = (std::move(args))]() mutable {
       std::apply(cb, std::move(args));
     });

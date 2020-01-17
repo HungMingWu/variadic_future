@@ -40,7 +40,7 @@ class Future_then_expect_handler
   using dst_storage_type = Storage_for_cb_result_t<Alloc, cb_result_type>;
   using dst_type = Storage_ptr<dst_storage_type>;
 
-  Future_then_expect_handler(QueueT* q, dst_type dst, CbT cb)
+  Future_then_expect_handler(observer_ptr<QueueT> q, dst_type dst, CbT cb)
       : parent_type(q), dst_(std::move(dst)), cb_(std::move(cb)) {}
 
   void fullfill(fullfill_type v) override {
@@ -52,14 +52,14 @@ class Future_then_expect_handler
     do_finish(this->get_queue(), std::move(f), std::move(dst_), std::move(cb_));
   };
 
-  static void do_fullfill(QueueT* q, fullfill_type v, dst_type dst, CbT cb) {
+  static void do_fullfill(observer_ptr<QueueT> q, fullfill_type v, dst_type dst, CbT cb) {
     auto cb_args =
         fullfill_to_finish<0, 0, std::tuple<expected<Ts>...>>(std::move(v));
 
     do_finish(q, std::move(cb_args), std::move(dst), std::move(cb));
   }
 
-  static void do_finish(QueueT* q, finish_type f, dst_type dst, CbT cb) {
+  static void do_finish(observer_ptr<QueueT> q, finish_type f, dst_type dst, CbT cb) {
     enqueue(q, [cb = std::move(cb), dst = std::move(dst), f = std::move(f)] {
       try {
         if constexpr (std::is_same_v<void, cb_result_type>) {

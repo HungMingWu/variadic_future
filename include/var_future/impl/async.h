@@ -29,7 +29,7 @@ auto async(QueueT& q, CbT&& cb) {
   detail::Storage_ptr<dst_storage_type> res;
   res.allocate(std::allocator<void>());
 
-  detail::enqueue(&q, [cb = std::move(cb), res] {
+  detail::enqueue(observer_ptr<QueueT>(&q), [cb = std::move(cb), res] {
     try {
       if constexpr (std::is_same_v<void, cb_result_type>) {
         cb();
